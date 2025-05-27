@@ -1,0 +1,93 @@
+-- Teleport to Sterling - Standalone
+local plr = game:GetService("Players").LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+
+-- Required Remotes
+local startDrag = function(obj)
+    rs:FindFirstChild("RequestStartDrag", true):FireServer(obj)
+end
+
+local stopDrag = function()
+    rs:FindFirstChild("RequestStopDrag", true):FireServer()
+end
+
+local network = {
+    Other = {
+        Sit = function(seat)
+            rs:FindFirstChild("C_Sit", true):FireServer(seat)
+        end
+    }
+}
+
+-- Utility
+local function claimNetwork(object)
+    startDrag(object)
+    local dragParts = {"DragAttachment", "DragAlignPosition", "DragAlignOrientation"}
+    for _ = 1, 100 do
+        for _, name in ipairs(dragParts) do
+            local found = object:FindFirstChild(name, true)
+            if found then
+                found:Destroy()
+            end
+        end
+        task.wait(0.01)
+    end
+end
+
+-- Scan workspace recursively for Sterling
+local function scanForSterling()
+    local attempt = 0
+    while true do
+        attempt += 1
+        local found = workspace:FindFirstChild("Sterling", true)
+        if found then return found:GetPivot() + Vector3.new(0, 10) end
+        task.wait(1)
+        if attempt % 10 == 0 then warn("Still scanning for Sterling...") end
+    end
+end
+
+-- Get a usable chair
+local function getChair()
+    for _, obj in pairs(workspace.RuntimeItems:GetChildren()) do
+        if obj.Name == "Chair" and obj:FindFirstChild("Seat") then
+            local seat = obj.Seat
+            if not seat.Occupant or seat.Occupant == plr.Character:FindFirstChildOfClass("Humanoid") then
+                return obj
+            end
+        end
+    end
+end
+
+-- Perform the teleport
+local function teleportToSterling()
+    warn("[Teleport] Scanning for Sterling...")
+    local target = scanForSterling()
+    warn("[Teleport] Sterling found!")
+
+    local chair = getChair()
+    if not chair then
+        return warn("[Teleport] No chair found!")
+    end
+
+    network.Other.Sit(chair.Seat)
+    task.wait(0.5)
+
+    for i = 1, 5 do
+        task.spawn(function()
+            claimNetwork(chair)
+        end)
+        chair:PivotTo(target)
+        plr.Character:PivotTo(target)
+        task.wait(0.2)
+    end
+
+    stopDrag()
+    plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    task.wait(0.1)
+    plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+
+    print("[Teleport] Done.")
+end
+
+-- Run
+teleportToSterling()
