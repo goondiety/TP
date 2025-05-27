@@ -1,0 +1,87 @@
+-- Base location CFrames
+local baseLocations = {
+    ["Spawn"] = CFrame.new(56.6396217, 3.24999976, 29936.3516),
+    ["10 KM"] = CFrame.new(-160.576843, 2.99617577, 19913.252),
+    ["20 KM"] = CFrame.new(-556.92572, 2.98922157, 9956.79883),
+    ["30 KM"] = CFrame.new(-569.779663, 2.99999976, 47.5958443),
+    ["40 KM"] = CFrame.new(-184.494064, 3.14674306, -9899.91797),
+    ["50 KM"] = CFrame.new(55.228714, 3.19885039, -19842.3789),
+    ["60 KM"] = CFrame.new(-199.620743, 3.14927387, -29733.9453),
+    ["70 KM"] = CFrame.new(-577.781921, 3.49909163, -39654.2148),
+}
+
+-- Helper: Find nearest VehicleSeat
+local function findClosestSeat(position)
+    local minDistance = math.huge
+    local closestSeat = nil
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("VehicleSeat") then
+            local dist = (obj.Position - position).Magnitude
+            if dist < minDistance then
+                minDistance = dist
+                closestSeat = obj
+            end
+        end
+    end
+    return closestSeat
+end
+
+-- Core teleport logic
+local function teleportTo(cframe)
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    
+    local originalSpeed = hum.WalkSpeed
+    hum.WalkSpeed = 0
+    hrp.CFrame = cframe
+    hrp.Anchored = true
+
+    task.wait(2)
+
+    local seat = findClosestSeat(hrp.Position)
+    if seat then
+        hrp.CFrame = seat.CFrame + Vector3.new(0, 3, 0)
+        task.wait(0.15)
+        hrp.Anchored = false
+        task.wait(0.5)
+        seat:Sit(hum)
+    else
+        hrp.Anchored = false
+    end
+
+    hum.WalkSpeed = originalSpeed
+end
+
+-- Individual teleport functions
+function TeleportToSpawn()
+    teleportTo(baseLocations["Spawn"])
+end
+
+function TeleportTo10KM()
+    teleportTo(baseLocations["10 KM"])
+end
+
+function TeleportTo20KM()
+    teleportTo(baseLocations["20 KM"])
+end
+
+function TeleportTo30KM()
+    teleportTo(baseLocations["30 KM"])
+end
+
+function TeleportTo40KM()
+    teleportTo(baseLocations["40 KM"])
+end
+
+function TeleportTo50KM()
+    teleportTo(baseLocations["50 KM"])
+end
+
+function TeleportTo60KM()
+    teleportTo(baseLocations["60 KM"])
+end
+function TeleportTo70KM()
+    teleportTo(baseLocations["70 KM"])
+end
